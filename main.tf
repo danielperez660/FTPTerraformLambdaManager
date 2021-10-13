@@ -42,7 +42,7 @@ EOF
 resource "aws_cloudwatch_event_rule" "hourlyCheck" {
     name = "hourlyFTPCheck"
     description = "Does an hourly check to a given FTP server"
-    schedule_expression = "rate(1 minute)"
+    schedule_expression = "rate(1 hour)"
 }
 
 resource "aws_cloudwatch_event_target" "targetResource" {
