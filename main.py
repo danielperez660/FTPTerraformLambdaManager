@@ -1,0 +1,4 @@
+import ftplib
+
+def lambda_handler(event, context):
+    print(event)
