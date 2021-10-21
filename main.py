@@ -4,7 +4,7 @@ import os
 # from PyBambooHR import PyBambooHR
 
 # FTP server configuration
-ip_ftp = ""
+ip_ftp = "3.11.13.189"
 username = "anonymous"
 password = "anonymous"
 
@@ -18,15 +18,15 @@ except:
 
 def csv_parser(filename):
     
-    with open(filename, 'wb') as file:
+    with open('/tmp/'+filename, 'wb') as file:
         ftp.retrbinary('RETR ' + filename, file.write)
 
-    with open(filename, newline='') as csvfile:
+    with open('/tmp/'+filename, newline='') as csvfile:
         spamreader = csv.reader(csvfile, delimiter=' ', quotechar='|')
         for row in spamreader:
             print(', '.join(row))
 
-    os.remove(filename)
+    os.remove('/tmp/'+filename)
 
 def lambda_handler(event=None, context=None):
     # Gets list of existing files in FTP serber
@@ -38,5 +38,5 @@ def lambda_handler(event=None, context=None):
     ftp.close()
 
 # Remove before deploying
-lambda_handler()
+# lambda_handler()
 
