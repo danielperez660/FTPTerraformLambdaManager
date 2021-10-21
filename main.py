@@ -26,7 +26,7 @@ def csv_parser(filename):
         for row in spamreader:
             print(', '.join(row))
 
-    os.remove('/tmp/'+filename)
+    os.remove('/tmp/' + filename)
 
 def lambda_handler(event=None, context=None):
     # Gets list of existing files in FTP serber
