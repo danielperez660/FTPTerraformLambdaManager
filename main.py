@@ -1,7 +1,7 @@
 import ftplib
 import csv
 import os
-# from PyBambooHR import PyBambooHR
+from bambooManager import bamboo
 
 # FTP server configuration
 ip_ftp = "3.11.13.189"
@@ -18,10 +18,10 @@ except:
 
 def csv_parser(filename):
     
-    with open('/tmp/'+filename, 'wb') as file:
+    with open('/tmp/' + filename, 'wb') as file:
         ftp.retrbinary('RETR ' + filename, file.write)
 
-    with open('/tmp/'+filename, newline='') as csvfile:
+    with open('/tmp/' + filename, newline='') as csvfile:
         spamreader = csv.reader(csvfile, delimiter=' ', quotechar='|')
         for row in spamreader:
             print(', '.join(row))
@@ -36,7 +36,3 @@ def lambda_handler(event=None, context=None):
     csv_parser('test_data.csv')
 
     ftp.close()
-
-# Remove before deploying
-# lambda_handler()
-

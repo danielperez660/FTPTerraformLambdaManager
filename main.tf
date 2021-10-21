@@ -1,7 +1,24 @@
 data "archive_file" "init"{
     type = "zip"
-    source_file = "main.py"
     output_path = "main.zip"
+
+    source {
+      content = data.template_file.main.rendered
+      filename = "main.py"
+    }
+
+    source {
+      content = data.template_file.bamboohrpip.rendered
+      filename = "bambooManager.py"
+    }
+}
+
+data "template_file" "main" {
+  template = "${file("main.py")}"
+}
+
+data "template_file" "bamboohrpip" {
+  template = "${file("bambooManager.py")}"
 }
 
 data "archive_file" "bamboohr"{
