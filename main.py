@@ -1,5 +1,6 @@
 import ftplib
 import csv
+import os
 # from PyBambooHR import PyBambooHR
 
 # FTP server configuration
@@ -16,19 +17,20 @@ except:
     exit()
 
 def csv_parser(filename):
+    
     with open(filename, 'wb') as file:
-        ftp.retrbinary(f'RETR {filename}', file.write)
-        reader = csv.reader(file)
-        print(reader)
-        # for row in reader:
-        #     print(', '.join(row))
+        ftp.retrbinary('RETR ' + filename, file.write)
+
+    with open(filename, newline='') as csvfile:
+        spamreader = csv.reader(csvfile, delimiter=' ', quotechar='|')
+        for row in spamreader:
+            print(', '.join(row))
+
+    os.remove(filename)
 
 def lambda_handler(event=None, context=None):
     # Gets list of existing files in FTP serber
     directory = ftp.nlst()
-
-    for i in directory:
-        print(i)
 
     csv_parser('test_data.csv')
 
