@@ -39,6 +39,19 @@ EOF
   }
 }
 
+data  "aws_iam_policy" "policy" {
+  arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+}
+
+resource "aws_cloudwatch_log_group" "ftp" {
+  name = "/aws/lambda/FTPManager"
+}
+
+resource "aws_iam_role_policy_attachment" "cloudtrail_attach" {
+  role       = aws_iam_role.lambdaAdminIAM.name
+  policy_arn = data.aws_iam_policy.policy.arn
+}
+
 resource "aws_cloudwatch_event_rule" "hourlyCheck" {
     name = "hourlyFTPCheck"
     description = "Does an hourly check to a given FTP server"
