@@ -32,6 +32,7 @@ def lambda_handler(event=None, context=None):
     # Gets list of existing files in FTP serber
     directory = ftp.nlst()
 
+    ftp.cwd('files')
     csv_parser('test_data.csv')
 
     ftp.close()
