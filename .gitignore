@@ -1,4 +1,9 @@
 .terraform*
 *.zip
 bambooHR
+pysftp
 *.pyc
+*.ppk
+*.pem
+*.pub
+*.csv

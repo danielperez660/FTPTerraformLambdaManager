@@ -27,12 +27,19 @@ data "archive_file" "bamboohr"{
     output_path = "bambooHR.zip"
 }
 
+data "archive_file" "pysftp"{
+    type = "zip"
+    source_dir = "pysftp"
+    output_path = "pysftp.zip"
+}
+
+
 resource "aws_lambda_function" "FTPManager"{
     filename=data.archive_file.init.output_path
     function_name = "FTPManager"
     role=aws_iam_role.lambdaAdminIAM.arn
     handler="main.lambda_handler"
-    layers = [aws_lambda_layer_version.pyBamboo.arn]
+    layers = [aws_lambda_layer_version.pysftpLayer.arn]
     source_code_hash = filebase64sha256(data.archive_file.init.output_path)
 
     runtime="python3.9"
@@ -94,9 +101,9 @@ resource "aws_lambda_permission" "cloudwatch_permission" {
     source_arn = aws_cloudwatch_event_rule.hourlyCheck.arn
 }
 
-resource "aws_lambda_layer_version" "pyBamboo" {
-  filename   = data.archive_file.bamboohr.output_path
-  layer_name = "pyBambooHR"
-  source_code_hash = filebase64sha256(data.archive_file.bamboohr.output_path)
+resource "aws_lambda_layer_version" "pysftpLayer" {
+  filename   = data.archive_file.pysftp.output_path
+  layer_name = "pysftpLayer"
+  source_code_hash = filebase64sha256(data.archive_file.pysftp.output_path)
   compatible_runtimes = ["python3.9"]
 }

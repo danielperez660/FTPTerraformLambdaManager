@@ -1,38 +1,54 @@
-import ftplib
 import csv
 import os
-from bambooManager import bamboo
+from bambooManager import create_user
+import paramiko
 
-# FTP server configuration
-ip_ftp = "3.11.13.189"
-username = "anonymous"
-password = "anonymous"
+key = paramiko.rsakey.RSAKey(filename='ssh-key.pem')
+host,port = "sftp.eploy.net ",22
+ssh = paramiko.SSHClient()
 
 # Attempts to authenticate to FTP server
 try:
-    ftp = ftplib.FTP(ip_ftp)
-    ftp.login(username, password)
-except:
-    print("Error connecting to FTP")
-    exit()
+    ssh.connect(host, username='HippoDigital', pkey=key)
+    ftp = ssh.open_sftp()
+except Exception as e:
+    print("Error connecting to SFTP:", e)
+    # exit()
 
 def csv_parser(filename):
-    
-    with open('/tmp/' + filename, 'wb') as file:
-        ftp.retrbinary('RETR ' + filename, file.write)
+    with open(filename, newline='') as csvfile:
+        reader = csv.reader(csvfile, delimiter=',', quotechar='"')
 
-    with open('/tmp/' + filename, newline='') as csvfile:
-        spamreader = csv.reader(csvfile, delimiter=' ', quotechar='|')
-        for row in spamreader:
-            print(', '.join(row))
+        header = []
+        header = next(reader)
 
-    os.remove('/tmp/' + filename)
+        for row in reader:
+            create_user(row)
+
+
+    # with open('/tmp/' + filename, 'wb') as file:
+    #     ftp.retrbinary('RETR ' + filename, file.write)
+
+    # with open('/tmp/' + filename, newline='') as csvfile:
+        # reader = csv.reader(csvfile, delimiter=',', quotechar='"')
+        # header = []
+        # header = next(reader)
+    #     for row in reader:
+    #         print(', '.join(row))
+
+    # os.remove('/tmp/' + filename)
 
 def lambda_handler(event=None, context=None):
     # Gets list of existing files in FTP serber
-    directory = ftp.nlst()
+    directory = ftp.listdir(path='.')
 
-    ftp.cwd('files')
-    csv_parser('test_data.csv')
+    for i in directory:
+        print(i)
 
-    ftp.close()
+    # ftp.cwd('files')
+    # csv_parser('test_data.csv')
+
+
+# lambda_handler()
+
+csv_parser('test_data.csv')
