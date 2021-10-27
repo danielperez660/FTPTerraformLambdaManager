@@ -13,7 +13,7 @@ try:
     ftp = ssh.open_sftp()
 except Exception as e:
     print("Error connecting to SFTP:", e)
-    # exit()
+    exit()
 
 def csv_parser(filename):
     with open(filename, newline='') as csvfile:

@@ -1,0 +1,3 @@
+variable "bamboo"{
+    type = string
+}

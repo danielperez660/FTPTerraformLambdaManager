@@ -43,6 +43,12 @@ resource "aws_lambda_function" "FTPManager"{
     source_code_hash = filebase64sha256(data.archive_file.init.output_path)
 
     runtime="python3.9"
+
+    environment {
+      variables = {
+        "TF_VAR_bamboo" = var.bamboo
+      }
+    }
 }
 
 resource "aws_iam_role" "lambdaAdminIAM" {
