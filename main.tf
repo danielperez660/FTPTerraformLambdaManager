@@ -8,7 +8,7 @@ data "archive_file" "init"{
     }
 
     source {
-      content = data.template_file.bamboohrpip.rendered
+      content = data.template_file.bamboohr.rendered
       filename = "bambooManager.py"
     }
 }
@@ -17,14 +17,8 @@ data "template_file" "main" {
   template = "${file("main.py")}"
 }
 
-data "template_file" "bamboohrpip" {
+data "template_file" "bamboohr" {
   template = "${file("bambooManager.py")}"
-}
-
-data "archive_file" "bamboohr"{
-    type = "zip"
-    source_dir = "bambooHR"
-    output_path = "bambooHR.zip"
 }
 
 data "archive_file" "pysftp"{
@@ -33,13 +27,19 @@ data "archive_file" "pysftp"{
     output_path = "pysftp.zip"
 }
 
+data "archive_file" "requests"{
+    type = "zip"
+    source_dir = "requests"
+    output_path = "requests.zip"
+}
+
 
 resource "aws_lambda_function" "FTPManager"{
     filename=data.archive_file.init.output_path
     function_name = "FTPManager"
     role=aws_iam_role.lambdaAdminIAM.arn
     handler="main.lambda_handler"
-    layers = [aws_lambda_layer_version.pysftpLayer.arn]
+    layers = [aws_lambda_layer_version.pysftpLayer.arn, aws_lambda_layer_version.requestsLayer.arn]
     source_code_hash = filebase64sha256(data.archive_file.init.output_path)
 
     runtime="python3.9"
@@ -111,5 +111,12 @@ resource "aws_lambda_layer_version" "pysftpLayer" {
   filename   = data.archive_file.pysftp.output_path
   layer_name = "pysftpLayer"
   source_code_hash = filebase64sha256(data.archive_file.pysftp.output_path)
+  compatible_runtimes = ["python3.9"]
+}
+
+resource "aws_lambda_layer_version" "requestsLayer" {
+  filename   = data.archive_file.requests.output_path
+  layer_name = "requestsLayer"
+  source_code_hash = filebase64sha256(data.archive_file.reuests.output_path)
   compatible_runtimes = ["python3.9"]
 }
