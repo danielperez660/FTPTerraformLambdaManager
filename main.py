@@ -18,39 +18,42 @@ except Exception as e:
     exit()
 
 def csv_parser(filename):
-    with open(filename, newline='') as csvfile:
+    # with open(filename, newline='') as csvfile:
+    #     reader = csv.reader(csvfile, delimiter=',', quotechar='"')
+
+    #     header = []
+    #     header = next(reader)
+
+    #     for row in reader:
+    #         create_user(row)
+
+
+    # with open('/tmp/' + filename, 'wb') as file:
+    #     ftp.retrbinary('RETR ' + filename, file.write)
+
+    print("Parsing:", filename)
+    ftp.get(filename, 'tmp/'+ filename)
+
+    with open('tmp/' + filename, newline='') as csvfile:
         reader = csv.reader(csvfile, delimiter=',', quotechar='"')
 
         header = []
         header = next(reader)
 
         for row in reader:
-            create_user(row)
+            print(', '.join(row))
 
-
-    # with open('/tmp/' + filename, 'wb') as file:
-    #     ftp.retrbinary('RETR ' + filename, file.write)
-
-    # with open('/tmp/' + filename, newline='') as csvfile:
-        # reader = csv.reader(csvfile, delimiter=',', quotechar='"')
-        # header = []
-        # header = next(reader)
-    #     for row in reader:
-    #         print(', '.join(row))
-
-    # os.remove('/tmp/' + filename)
+    os.remove('tmp/' + filename)
 
 def lambda_handler(event=None, context=None):
     # Gets list of existing files in FTP serber
+    ftp.chdir('PayrollExport')
     directory = ftp.listdir(path='.')
 
     for i in directory:
-        print(i)
+        csv_parser(i)
 
-    # ftp.cwd('files')
-    # csv_parser('test_data.csv')
 
 
 lambda_handler()
-
 # csv_parser('test_data.csv')
