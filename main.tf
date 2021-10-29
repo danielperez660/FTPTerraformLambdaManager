@@ -33,13 +33,19 @@ data "archive_file" "requests"{
     output_path = "requests.zip"
 }
 
+data "archive_file" "cryptography"{
+    type = "zip"
+    source_dir = "cryptography"
+    output_path = "cryptography.zip"
+}
 
 resource "aws_lambda_function" "FTPManager"{
     filename=data.archive_file.init.output_path
     function_name = "FTPManager"
     role=aws_iam_role.lambdaAdminIAM.arn
     handler="main.lambda_handler"
-    layers = [aws_lambda_layer_version.pysftpLayer.arn, aws_lambda_layer_version.requestsLayer.arn]
+    layers = [aws_lambda_layer_version.pysftpLayer.arn, aws_lambda_layer_version.requestsLayer.arn,
+     aws_lambda_layer_version.cryptographyLayer.arn]
     source_code_hash = filebase64sha256(data.archive_file.init.output_path)
 
     runtime="python3.9"
@@ -118,5 +124,12 @@ resource "aws_lambda_layer_version" "requestsLayer" {
   filename   = data.archive_file.requests.output_path
   layer_name = "requestsLayer"
   source_code_hash = filebase64sha256(data.archive_file.requests.output_path)
+  compatible_runtimes = ["python3.9"]
+}
+
+resource "aws_lambda_layer_version" "cryptographyLayer" {
+  filename   = data.archive_file.cryptography.output_path
+  layer_name = "cryptographyLayer"
+  source_code_hash = filebase64sha256(data.archive_file.cryptography.output_path)
   compatible_runtimes = ["python3.9"]
 }

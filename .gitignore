@@ -9,4 +9,5 @@
 bambooHR
 pysftp
 requests
+cryptography
 *.zip

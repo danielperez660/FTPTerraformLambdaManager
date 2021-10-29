@@ -9,7 +9,9 @@ ssh = paramiko.SSHClient()
 
 # Attempts to authenticate to FTP server
 try:
-    ssh.connect(host, username='HippoDigital', pkey=key)
+    ssh.load_system_host_keys()
+    ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+    ssh.connect('sftp.eploy.net', username='HippoDigital', pkey=key, port=port)
     ftp = ssh.open_sftp()
 except Exception as e:
     print("Error connecting to SFTP:", e)
@@ -49,6 +51,6 @@ def lambda_handler(event=None, context=None):
     # csv_parser('test_data.csv')
 
 
-# lambda_handler()
+lambda_handler()
 
-csv_parser('test_data.csv')
+# csv_parser('test_data.csv')
