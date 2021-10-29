@@ -117,6 +117,6 @@ resource "aws_lambda_layer_version" "pysftpLayer" {
 resource "aws_lambda_layer_version" "requestsLayer" {
   filename   = data.archive_file.requests.output_path
   layer_name = "requestsLayer"
-  source_code_hash = filebase64sha256(data.archive_file.reuests.output_path)
+  source_code_hash = filebase64sha256(data.archive_file.requests.output_path)
   compatible_runtimes = ["python3.9"]
 }
