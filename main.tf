@@ -33,22 +33,25 @@ data "archive_file" "requests"{
     output_path = "requests.zip"
 }
 
-data "archive_file" "cryptography"{
+data "archive_file" "boto3"{
     type = "zip"
-    source_dir = "cryptography"
-    output_path = "cryptography.zip"
+    source_dir = "boto3"
+    output_path = "boto3.zip"
 }
+
 
 resource "aws_lambda_function" "FTPManager"{
     filename=data.archive_file.init.output_path
     function_name = "FTPManager"
     role=aws_iam_role.lambdaAdminIAM.arn
     handler="main.lambda_handler"
-    layers = [aws_lambda_layer_version.pysftpLayer.arn, aws_lambda_layer_version.requestsLayer.arn,
-     aws_lambda_layer_version.cryptographyLayer.arn]
+    layers = [aws_lambda_layer_version.pysftpLayer.arn, aws_lambda_layer_version.requestsLayer.arn, 
+    aws_lambda_layer_version.boto3Layer.arn]
     source_code_hash = filebase64sha256(data.archive_file.init.output_path)
+    architectures = ["x86_64"]
 
     runtime="python3.9"
+    timeout = 60
 
     environment {
       variables = {
@@ -85,13 +88,37 @@ data  "aws_iam_policy" "policy" {
   arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
 }
 
-resource "aws_cloudwatch_log_group" "ftp" {
-  name = "/aws/lambda/FTPManager"
-}
-
 resource "aws_iam_role_policy_attachment" "cloudtrail_attach" {
   role       = aws_iam_role.lambdaAdminIAM.name
   policy_arn = data.aws_iam_policy.policy.arn
+}
+
+resource "aws_iam_policy" "key_policy"{
+  name = "key_reader"
+  description = "Read the SSH key from S3 for SFTP access"
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action = [
+          "s3:Get*",
+          "s3:List*"
+        ]
+        Effect   = "Allow"
+        Resource = "arn:aws:s3:::sfpt-key-storage/*"
+      },
+    ]
+  })
+}
+
+resource "aws_iam_role_policy_attachment" "keypolicy_attach" {
+  role       = aws_iam_role.lambdaAdminIAM.name
+  policy_arn = aws_iam_policy.key_policy.arn
+}
+
+resource "aws_cloudwatch_log_group" "ftp" {
+  name = "/aws/lambda/FTPManager"
 }
 
 resource "aws_cloudwatch_event_rule" "hourlyCheck" {
@@ -127,9 +154,10 @@ resource "aws_lambda_layer_version" "requestsLayer" {
   compatible_runtimes = ["python3.9"]
 }
 
-resource "aws_lambda_layer_version" "cryptographyLayer" {
-  filename   = data.archive_file.cryptography.output_path
-  layer_name = "cryptographyLayer"
-  source_code_hash = filebase64sha256(data.archive_file.cryptography.output_path)
+resource "aws_lambda_layer_version" "boto3Layer" {
+  filename   = data.archive_file.boto3.output_path
+  layer_name = "boto3Layer"
+  source_code_hash = filebase64sha256(data.archive_file.boto3.output_path)
   compatible_runtimes = ["python3.9"]
 }
+

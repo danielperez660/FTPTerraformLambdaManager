@@ -2,8 +2,21 @@ import csv
 import os
 from bambooManager import create_user
 import paramiko
+import boto3
 
-key = paramiko.rsakey.RSAKey(filename='ssh-key.pem')
+try:
+    s3_client = boto3.client('s3')
+    s3_client.download_file("sfpt-key-storage", "ssh-key.pem", "/tmp/ssh-key.pem")
+except Exception as e:
+    print("Error getting SSH key:", e)
+    exit()
+
+try:
+    key = paramiko.rsakey.RSAKey(filename='/tmp/ssh-key.pem')
+except Exception as e:
+    print("Error reading SSH key:", e)
+    exit()
+    
 host,port = "sftp.eploy.net ",22
 ssh = paramiko.SSHClient()
 
@@ -11,6 +24,7 @@ ssh = paramiko.SSHClient()
 try:
     ssh.load_system_host_keys()
     ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+
     ssh.connect('sftp.eploy.net', username='HippoDigital', pkey=key, port=port)
     ftp = ssh.open_sftp()
 except Exception as e:
@@ -51,9 +65,9 @@ def lambda_handler(event=None, context=None):
     directory = ftp.listdir(path='.')
 
     for i in directory:
-        csv_parser(i)
+        print(i)
 
 
 
-lambda_handler()
+# lambda_handler()
 # csv_parser('test_data.csv')
