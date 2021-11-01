@@ -3,17 +3,19 @@ import json
 import os
 import datetime
 
-api_key = "e579f2a207c3e1c0ff93ced03e36be8f3453ad8d"
+test_api_key = "e579f2a207c3e1c0ff93ced03e36be8f3453ad8d"
+
 api_key_hippo = os.environ["TF_VAR_bamboo"]
 
 def api_caller(endpoint, data):
     if endpoint == "employees":
-        url = "https://api.bamboohr.com/api/gateway.php/testdomain123/v1/employees/"
-        # url = "https://api.bamboohr.com/api/gateway.php/hippodigital/v1/employees/"
+        url_test = "https://api.bamboohr.com/api/gateway.php/testdomain123/v1/employees/"
+        # url_hippo = "https://api.bamboohr.com/api/gateway.php/hippodigital/v1/employees/"
 
         headers = {"Content-Type": "application/json"}
 
-        res = requests.post(url=url, data=data, headers=headers, auth=(api_key, ''))
+        # res = requests.post(url=url_hippo, data=data, headers=headers, auth=(api_key_hippo, ''))
+        res = requests.post(url=url_test, data=data, headers=headers, auth=(test_api_key, ''))
         print(res.headers)
 
 
