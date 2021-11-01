@@ -16,8 +16,8 @@ try:
 except Exception as e:
     print("Error reading SSH key:", e)
     exit()
-    
-host,port = "sftp.eploy.net ",22
+
+host,port = "sftp.eploy.net", 22
 ssh = paramiko.SSHClient()
 
 # Attempts to authenticate to FTP server
@@ -32,19 +32,6 @@ except Exception as e:
     exit()
 
 def csv_parser(filename):
-    # with open(filename, newline='') as csvfile:
-    #     reader = csv.reader(csvfile, delimiter=',', quotechar='"')
-
-    #     header = []
-    #     header = next(reader)
-
-    #     for row in reader:
-    #         create_user(row)
-
-
-    # with open('/tmp/' + filename, 'wb') as file:
-    #     ftp.retrbinary('RETR ' + filename, file.write)
-
     print("Parsing:", filename)
     ftp.get(filename, 'tmp/'+ filename)
 
@@ -67,7 +54,3 @@ def lambda_handler(event=None, context=None):
     for i in directory:
         print(i)
 
-
-
-# lambda_handler()
-# csv_parser('test_data.csv')

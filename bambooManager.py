@@ -60,7 +60,7 @@ def create_user(user_object):
             "nameOfAgency" : user_object[18]
         }
 
-    # try:
-    api_caller('employees', json.dumps(employee))
-    # except Exception as e:
-        # print("Error creating employee:", e)
+    try:
+        api_caller('employees', json.dumps(employee))
+    except Exception as e:
+        print("Error creating employee:", e)
