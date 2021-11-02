@@ -12,6 +12,14 @@ except Exception as e:
     exit()
 
 try:
+    s3_resources = boto3.resource('s3')
+    csv_bucket = s3_resources.Bucket('sftp-csv-storage')
+    csv_list = [i.key for i in csv_bucket.objects.all()]
+except Exception as e:
+    print("Error getting csv storage bucket:", e)
+    exit()
+
+try:
     key = paramiko.rsakey.RSAKey(filename='/tmp/ssh-key.pem')
 except Exception as e:
     print("Error reading SSH key:", e)
@@ -33,9 +41,12 @@ except Exception as e:
 
 def csv_parser(filename):
     print("Parsing:", filename)
-    ftp.get(filename, 'tmp/'+ filename)
 
-    with open('tmp/' + filename, newline='') as csvfile:
+    ftp.get(str(filename), str(f'/tmp/{filename}'))
+
+    csv_bucket.upload_file(f'/tmp/{filename}', filename)
+
+    with open('/tmp/' + filename, newline='') as csvfile:
         reader = csv.reader(csvfile, delimiter=',', quotechar='"')
 
         header = []
@@ -44,13 +55,24 @@ def csv_parser(filename):
         for row in reader:
             print(', '.join(row))
 
-    os.remove('tmp/' + filename)
+    os.remove('/tmp/' + filename)
 
 def lambda_handler(event=None, context=None):
-    # Gets list of existing files in FTP serber
-    ftp.chdir('PayrollExport')
-    directory = ftp.listdir(path='.')
+    # Gets list of existing files in FTP server
+    try:
+        ftp.chdir('PayrollExport')
+    except FileNotFoundError as e:
+        print("Already in PayrollExport:", e)
 
+    directory = ftp.listdir(path='.')
+    
     for i in directory:
-        print(i)
+        print("ITEM:", i)
+        i = i.strip()
+
+        if i not in csv_list:
+            csv_parser(i)
+        else:
+            print(f"{i} has already been processed")
+
 

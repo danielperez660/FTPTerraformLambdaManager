@@ -112,9 +112,38 @@ resource "aws_iam_policy" "key_policy"{
   })
 }
 
+resource "aws_iam_policy" "s3_write_policy"{
+  name = "csv_writer"
+  description = "Write the new CSV file to an S3 bucket"
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action = [
+          "s3:Get*",
+          "s3:List*",
+          "s3:Put*",
+          "s3:DeleteObject"
+        ]
+        Effect   = "Allow"
+        Resource = [
+          "arn:aws:s3:::sftp-csv-storage/*",
+          "arn:aws:s3:::sftp-csv-storage",
+        ]
+      },
+    ]
+  })
+}
+
 resource "aws_iam_role_policy_attachment" "keypolicy_attach" {
   role       = aws_iam_role.lambdaAdminIAM.name
   policy_arn = aws_iam_policy.key_policy.arn
+}
+
+resource "aws_iam_role_policy_attachment" "s3writepolicy_attach" {
+  role       = aws_iam_role.lambdaAdminIAM.name
+  policy_arn = aws_iam_policy.s3_write_policy.arn
 }
 
 resource "aws_cloudwatch_log_group" "ftp" {
@@ -161,3 +190,16 @@ resource "aws_lambda_layer_version" "boto3Layer" {
   compatible_runtimes = ["python3.9"]
 }
 
+resource "aws_s3_bucket" "csv_storage" {
+  bucket = "sftp-csv-storage"
+  acl    = "private"
+}
+
+resource "aws_s3_bucket_public_access_block" "public_access_manager" {
+  bucket = aws_s3_bucket.csv_storage.id
+
+  # block_public_acls   = true
+  block_public_policy = true
+  restrict_public_buckets = true
+  ignore_public_acls = true
+}
